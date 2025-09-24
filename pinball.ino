@@ -16,62 +16,69 @@
 */
 
 //----------------------------------------------
-//External include
-#include <EEPROM.h>
-#include <DFPlayerMini.h>
-#include <Servo.h>
-#include <SoftwareSerial.h>
-#include <string.h>
+// Includes
+//----------------------------------------------
+  //External include
+  #include <EEPROM.h>
+  #include <DFPlayerMini.h>
+  #include <Servo.h>
+  #include <SoftwareSerial.h>
+  #include <string.h>
 
-//My includes (Make sure these files are in the same directory as this file)
-#include "audioFiles.h"
-#include "pinout.h"
-#include "pinball.h"
+  //My includes (Make sure these files are in the same directory as this file)
+  #include "audioFiles.h"
+  #include "pinout.h"
+  #include "pinball.h"
+  #include "DropDown.h"
 
 //----------------------------------------------
-//### Devices
-DFPlayerMini soundFX;
-DFPlayerMini music;
-
-Servo ballLoader;
-Servo dropTarget;
-
-//### State Flags
-volatile uint16_t flagRegister; // Multiple flags stored in the bit 0b-0000 0b-0000 
-volatile uint8_t gameMode;
-
-//### Timers
-unsigned long musicTimer, soundFXTimer, currentTime;  //TIMING 
-
-//### Game Values
-volatile unsigned long currentScore;
-uint8_t credits;
-uint8_t ballsLeft, ballsInPlay, ballsPerGame;
-
-
-//This stores the top three high scores and the initials associated with them
-struct highScore{
-  char initials[4];   //Needs to be 4 for String conversion exit point '\0' or something like that
-  unsigned long score;
-  String toString(){
-    return (String)initials + " Score: " + score;
-  }
-};
-highScore topScores[3];
-
+// Variables
 //----------------------------------------------
 
+  //### Devices
+
+  DFPlayerMini soundFX;
+  DFPlayerMini music;
+
+  Servo ballLoader;
+
+  //### State Flags
+  volatile uint16_t flagRegister; // Multiple flags stored in the bit 0b-0000 0b-0000 
+  volatile uint8_t gameMode;
+
+  //### Timers
+  unsigned long musicTimer, soundFXTimer, currentTime;  //TIMING 
+
+  //### Game Values
+  volatile unsigned long currentScore;
+  uint8_t credits;
+  uint8_t ballsLeft, ballsInPlay, ballsPerGame;
+
+
+  //This stores the top three high scores and the initials associated with them
+  struct highScore{
+    char initials[4];   //Needs to be 4 for String conversion exit point '\0' or something like that
+    unsigned long score;
+    String toString(){
+      return (String)initials + " Score: " + score;
+    }
+  };
+
+  //### Custom Classes and Structs
+  highScore topScores[3];
+  DropDown ddTarget(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET);
+//----------------------------------------------
+//  Code Begin
+//----------------------------------------------
 const bool DEBUG = true;
 
 //Initialize pinball machine
 void setup() {
-  //DEBUG
   if(DEBUG){ 
     Serial.begin(9600); 
     while(!Serial){}
     Serial.println("\n### BEGIN RUN ###\n");
   }
-
   //## Change these to customize your machine ##
   credits = 0;                    //Initial credits on startup
   ballsPerGame = 3;
@@ -89,8 +96,8 @@ void setup() {
   //## Hardware Setup ##
   //Set up Servos
   //ballLoader.attach(4);
-  //dropTarget.attach(3);
-  //pinMode(5,INPUT_PULLUP);
+
+  ddTarget.calibrate(); //Sets up drop target
 
   //## Set up Audio ##
   music.init(PIN_MUSIC_BUSY, PIN_MUSIC_RX, PIN_MUSIC_TX, pollSensors);
@@ -296,6 +303,10 @@ void loop() {
   //Updates ball launch timer
   void updateLauncher(){
     ballLoader.write(60);
+  }
+
+  void manageDropDown(){
+
   }
 
 

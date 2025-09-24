@@ -1,10 +1,19 @@
 /**
-  Pinball
+  Pinball Script for Arduino
   @author Dustin Kirkpatrick
-  @version v1.0
-  @since 2025-09-19
-*/
+  @version v0.01-alpha
+  @since 2025-09-20
 
+  This project seeks to create an easily expandable pinball game system.
+
+  The project offers: 
+  - Dual audio channel control for music and soundFX to be played simultaniously
+  - Encoder based expansion of  interupt pins, allowing for more interupts for on playfield targets
+  - Multiplexer LED control (I may rework this in the future)
+  - TODO DMD display support from an external Arduino Nano 
+
+  To build your own games, use the 
+*/
 
 /**
   coolDown

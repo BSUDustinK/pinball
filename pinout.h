@@ -1,3 +1,14 @@
+/**
+  Pin Out definitions for Arduino board
+  @author Dustin Kirkpatrick
+  @version v0.01-alpha
+  @since 2025-09-20
+
+  Customize these to your board, refer to your manufacture's pin guide for PWM and interupt capable pins
+
+  Current Configuration is for Arduino Mega2560
+*/
+
 //#### Communication ####
 
 //Music and Sound Effect
@@ -27,6 +38,9 @@
 #define PIN_ENCODER_ADR_2
 #define PIN_ENCODER_ADR_4
 
+//Polled Inputs //TODO replace 22
+#define PIN_POLL_DDTARGET 22 
+
 
 //#### Outputs ####
 
@@ -37,8 +51,9 @@
 #define PIN_POPBUMPER
 
 //Needs PWM
-#define PIN_SERVO_GATE
-#define PIN_SERVO_LOAD
+#define PIN_SERVO_DDTARGET 3
+#define PIN_SERVO_LOAD 4
+
 
 //LED Multiplexer
 #define MUX_ADDR_1

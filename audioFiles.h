@@ -1,3 +1,9 @@
+/**
+  Audio Location Definitions
+  @author Dustin Kirkpatrick
+  @version v0.01-alpha
+  @since 2025-09-20
+*/
 
 //technically not needed but I like the way it looks
 #define AUDIO_SFX 0
