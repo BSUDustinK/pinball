@@ -6,13 +6,16 @@
 
   This project seeks to create an easily expandable pinball game system.
 
-  The project offers: 
-  - Dual audio channel control for music and soundFX to be played simultaniously
-  - Encoder based expansion of  interupt pins, allowing for more interupts for on playfield targets
-  - Multiplexer LED control (I may rework this in the future)
-  - TODO DMD display support from an external Arduino Nano 
+  The project currently has: 
+  - Dual audio output control for music and soundFX to be played simultaniously
+  - Encoder based expansion of interupt pins, allowing for more interupts for on playfield targets 
+  (fast contact switches that are likely to be miss if polled)
+  - Makes use of the Arduino Mega 2560on board EEPROM to save high scored. This may be replaced with a better chip in the future
 
-  To build your own games, use the 
+  The project is planned to have:
+  - LED control, either addressed serially, or Multiplexed
+  - A 20 x 80 Dot Matrix Display, I plan on using a seperate Nano to control the DMD and the animations. 
+  
 */
 
 //----------------------------------------------
@@ -44,11 +47,12 @@
   Servo ballLoader;
 
   //### State Flags
-  volatile uint16_t flagRegister; // Multiple flags stored in the bit 0b-0000 0b-0000 
+  volatile uint16_t flagRegister; // Multiple flags stored in the bit 0x-0000-0000-0000-0000
   volatile uint8_t gameMode;
 
   //### Timers
   unsigned long musicTimer, soundFXTimer, currentTime;  //TIMING 
+  unsigned long launchTimer, launchSolenoidTimer, flipperTimer, catapultTimer;
 
   //### Game Values
   volatile unsigned long currentScore;
@@ -83,6 +87,8 @@ void setup() {
   credits = 0;                    //Initial credits on startup
   ballsPerGame = 3;
   currentTime = millis();
+  pinMode(PIN_SERVO_ENABLE, OUTPUT);
+  digitalWrite(PIN_SERVO_ENABLE,LOW);
 
   //### Loads High Scores   <<<<< KEEP COMMENTED UNTIL DEPLOYMENT. EEPROM HAS 100,000 read/write ops.
   //topScores[0] = EEPROM.get(0,topScores[0]);
@@ -96,21 +102,34 @@ void setup() {
 
   //## Hardware Setup ##
   //Set up Servos
-  //ballLoader.attach(4);
-
+  
   //COMPLETE CODE
+  ballLoader.attach(4);
+  ballLoader.write(60);
+
   ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
   ddTarget.calibrate(); //Sets up drop target
-  ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
+  ddTarget.setMode(2); //TODO for showing off set to 0 for actual gameplay
 
+  Serial.println("\nFinished Servo\n");
+
+  /*IMPORTANT,
+    ddTarget must detach before sending Serial data to sound boards. 
+    I think it has something to do with the internal timer interupts but couldn't find anything 
+  */
   //## Set up Audio ##
-  music.init(PIN_MUSIC_BUSY, PIN_MUSIC_RX, PIN_MUSIC_TX, pollSensors);
-  soundFX.init(PIN_SE_BUSY, PIN_SE_RX, PIN_SE_TX, pollSensors);
+  disableServos();
+  delay(1000);
+  music.init(PIN_MUSIC_BUSY, PIN_MUSIC_RX, PIN_MUSIC_TX);
+  soundFX.init(PIN_SE_BUSY, PIN_SE_RX, PIN_SE_TX);
   delay(200);
   music.setVolume(26);
   soundFX.setVolume(30);
   music.setVolume(2); //TODO Delete when not testing no more
   soundFX.setVolume(2); //TODO Delete when not testing no more
+  Serial.println("\nmusic\n");\
+  delay(1000);
+  enableServos();
 }
 
 //Main Loop
@@ -127,12 +146,6 @@ void loop() {
   //TODO displayLastGameScore();
   //TODO readyNewGame();
 }
-
-//--------------------------------------------------------------
-//      Helper Methods 
-//--------------------------------------------------------------
-
-  
 
 //--------------------------------------------------------------
 //      Score Keeping Methods 
@@ -226,6 +239,9 @@ void loop() {
 
     while(selection == 0){
       currentTime = millis();
+      pollSensors();
+
+      //Plays music
       if(!music.isBusy() && coolDownComplete(currentTime, &musicTimer, musicDelay)){
         switch(music_track){
           case 0:
@@ -245,14 +261,15 @@ void loop() {
         music_track++;
         music_track %= 4;
       }
+
+      //Plays SoundXF
       if(!soundFX.isBusy() && coolDownComplete(currentTime, &soundFXTimer, sfxDelay)){
         sfxDelay = playAudio(SFX_IDLE) + 412000;
       }
-
-
-
-
     }
+
+
+
     return selection;
   }
 
@@ -268,6 +285,7 @@ void loop() {
     @return duration the song will play for in ms
   */
   long playAudio(uint8_t type, uint8_t audioFile, long duration){
+    disableServos();
     switch(type){
       case AUDIO_SFX:
         soundFX.playFile(audioFile);
@@ -276,6 +294,7 @@ void loop() {
         music.playFile(audioFile);
         break;
     }
+    enableServos();
     return duration; 
   }
 //--------------------------------------------------------------
@@ -284,13 +303,39 @@ void loop() {
 //--------------------------------------------------------------
   //-TODO Complete this
   //Ball Launch Mech
-  //Launches Ball
-  void launchBall(){
+  //Loads a ball to be launched
+  void loadBall(){
     ballLoader.write(168);
+    while(false){
+      checkHardware(); 
+    }
   }
   //Updates ball launch timer
-  void updateLauncher(){
-    ballLoader.write(60);
+  void checkHardware(){
+    //Checks Servo for Ball Launcher
+    if(ballLoader.read() > 60){
+      if(coolDownComplete(currentTime, &launchTimer, 300)){
+        ballLoader.write(60);
+      }
+    }
+    if(FLAG_SOL_LAUNCH_ACTIVE){
+      if(coolDownComplete(currentTime, &launchSolenoidTimer, 300)){
+        digitalWrite(PIN_LAUNCHER, LOW);
+        flagRegister &= ~(0x01);
+      }
+    }
+  }
+
+  void launchBall(){
+
+  }
+
+  //This doesn't seem to help with the weird flickering with the Audio Serial commands. 
+  void disableServos(){
+    digitalWrite(PIN_SERVO_ENABLE,HIGH);
+  }
+  void enableServos(){
+    digitalWrite(PIN_SERVO_ENABLE,LOW);
   }
 //---------------------------------------------------------------
 //     Sensor readouts & interupt handlers
@@ -299,6 +344,7 @@ void loop() {
   //Time Sensitive function that checks polled sensors and hardware
   void pollSensors(){
     ddTarget.poll(currentTime); //Does Check up on Drop Down Target
+    checkHardware();
   }
 
   //Handles the encoded interupt signal

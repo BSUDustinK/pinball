@@ -28,13 +28,13 @@ bool coolDown(long* initialTime, long duration);
 
 //Flags flagRegister 0b-0000-0000-0000-0000
 // 0
-
+#define FLAG_SOL_LAUNCH_ACTIVE (flagRegister%2==1)
 // 1
-
+#define FLAG_SOL_FLIPPER_ACTIVE (flagRegister%2==1)
 // 2
-
+#define FLAG_SOL_CATAPULT (flagRegister%2==1)
 // 3
-
+#define FLAG_SOL_POPBUMPER_ACTIVE (flagRegister%2==1)
 // 4
 
 // 5
@@ -58,7 +58,4 @@ bool coolDown(long* initialTime, long duration);
 // 14
 
 // 15
-  //Regarding the accuracy of the EEPROM (Don't use)
-  #define FLAG_CHECK_EEPROM (flagRegister>>15) % 2
-  #define FLAG_SET_EEPROM flagRegister |= (0x1 << 15)    
-  #define FLAG_RESET_EEPROM flagRegister &= ~(0x1 << 15)  
+ 

@@ -47,6 +47,7 @@ DropDown::DropDown(){
 DropDown::setUp(uint8_t servoPin, uint8_t switchPin){
   this->switchPin = switchPin;
   this->flag = 0x00;
+  this->servoPin = servoPin;
   dropTarget.attach(servoPin);
   pinMode(switchPin, INPUT_PULLUP);
   dropTarget.write(MIN_HEIGHT);
@@ -56,7 +57,7 @@ DropDown::setUp(uint8_t servoPin, uint8_t switchPin){
 void DropDown::calibrate(){
   if(FLAG_DD_CALIBRATED) { return; } //No need to recalibrate
   if(digitalRead(switchPin) == HIGH){
-    uint16_t angle = 0;
+    uint8_t angle = 0;
     do{
       dropTarget.write(angle);
       delay(10);
@@ -95,10 +96,10 @@ uint8_t DropDown::poll(unsigned long time){
         return 1;
       }
       break;
-    case MODE_DD_LOCK:  //Stays up
+    case MODE_DD_LOCK:  //Stays up, holds ball
       if(digitalRead(switchPin) == HIGH){
         raise();
-        return 2;
+        return 3;
       }
       break;
     case MODE_DD_SKILL: //Moves up and down as a moving target, CAN NOT DETECT HITS!
@@ -116,6 +117,7 @@ void DropDown::setMode(uint8_t mode){
     case MODE_DD_BUMP:  //Pops back up instantly
       flag |= 0x00;
       raise();
+      drop();
       break;
     case MODE_DD_QUALIFIED: //Stays down
       flag |= 0x10;
@@ -123,6 +125,7 @@ void DropDown::setMode(uint8_t mode){
     case MODE_DD_LOCK:  //Stays up
       flag |= 0x20;
       raise();
+      drop();
       break;
     case MODE_DD_SKILL: //Moves up and down as a moving target, CAN NOT DETECT HITS! 
       flag |= 0x30;
@@ -139,6 +142,13 @@ void DropDown::animate(){
   }
 }
 
+void DropDown::attach(){
+  dropTarget.attach(servoPin);
+}
+void DropDown::detach(){
+  dropTarget.detach();
+}
+
 void DropDown::raise(){
   if(!FLAG_DD_CALIBRATED){
     calibrate();
@@ -151,5 +161,7 @@ void DropDown::raise(){
 void DropDown::drop(){
   if(FLAG_DD_MODE != MODE_DD_LOCK){
     dropTarget.write(MIN_HEIGHT);
+  } else {
+    dropTarget.write(targetHeight - 8);
   }
 }

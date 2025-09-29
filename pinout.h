@@ -20,6 +20,7 @@
 #define PIN_MUSIC_RX 50
 #define PIN_MUSIC_BUSY 48
 
+
 //DMD Figure this out
 #define PIN_DMD_TX 16
 #define PIN_DMD_RX 17
@@ -44,14 +45,18 @@
 
 //#### Outputs ####
 
+
+
 //24V Mosfet Chip
 #define PIN_SLING
 #define PIN_FLIPPER
-#define PIN_LAUNCHER
+#define PIN_LAUNCHER 0
 #define PIN_POPBUMPER
 
 //Needs PWM
-#define PIN_SERVO_DDTARGET 5
+#define PIN_SERVO_ENABLE 47
+
+#define PIN_SERVO_DDTARGET 3
 #define PIN_SERVO_LOAD 4
 
 

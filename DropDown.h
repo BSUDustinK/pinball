@@ -23,7 +23,7 @@ class DropDown
     private:
       Servo dropTarget;
       uint8_t targetHeight;
-      uint8_t switchPin;
+      uint8_t switchPin, servoPin;
       uint8_t flag;
       unsigned long timer, currentTime;
       void raise();
@@ -61,7 +61,9 @@ class DropDown
       /**
         Used within the game loop to check if a ball has been captured. 
         DOES NOT NEED AN INTERUPT!
-        @return 0 if not hit or locked, 1 if hit and open, 2 if hit and closed
+        @return 0 if not hit, 1 if hit and open, 2 if hit and closed, 3 if hit and locked
       */
       uint8_t poll(unsigned long time);
+      void attach();
+      void detach();
   }; 
