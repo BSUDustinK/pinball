@@ -26,11 +26,12 @@
   #include <string.h>
 
   //My includes (Make sure these files are in the same directory as this file)
+  #include "CoolDown.h"
   #include "audioFiles.h"
   #include "pinout.h"
-  #include "pinball.h"
   #include "DropDown.h"
 
+  #include "pinball.h"
 //----------------------------------------------
 // Variables
 //----------------------------------------------
@@ -66,7 +67,6 @@
 
   //### Custom Classes and Structs
   highScore topScores[3];
-  DropDown ddTarget(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET);
 //----------------------------------------------
 //  Code Begin
 //----------------------------------------------
@@ -82,6 +82,7 @@ void setup() {
   //## Change these to customize your machine ##
   credits = 0;                    //Initial credits on startup
   ballsPerGame = 3;
+  currentTime = millis();
 
   //### Loads High Scores   <<<<< KEEP COMMENTED UNTIL DEPLOYMENT. EEPROM HAS 100,000 read/write ops.
   //topScores[0] = EEPROM.get(0,topScores[0]);
@@ -97,7 +98,10 @@ void setup() {
   //Set up Servos
   //ballLoader.attach(4);
 
+  //COMPLETE CODE
+  ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
   ddTarget.calibrate(); //Sets up drop target
+  ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
 
   //## Set up Audio ##
   music.init(PIN_MUSIC_BUSY, PIN_MUSIC_RX, PIN_MUSIC_TX, pollSensors);
@@ -111,7 +115,7 @@ void setup() {
 
 //Main Loop
 void loop() {
-  delay(100);
+  currentTime = millis();
   gameMode = attractMode();  //Loops until game starts
   switch(gameMode){
     case 1:
@@ -128,23 +132,7 @@ void loop() {
 //      Helper Methods 
 //--------------------------------------------------------------
 
-  /**
-    Used to track cooldowns
-    @param initialTime A pointer to the timer for the desired module
-    @param duration The length in Milliseconds that the operation will wait before operating again
-    @return True if a timer was created or a previous timer has finished
-  */
-  bool coolDownComplete(unsigned long * initialTime, long duration){
-    if(*initialTime == NULL){  //Initializes the timer on first operation 
-      *initialTime = currentTime; 
-      return true;
-    } 
-    if(((currentTime - (*initialTime)) > duration)){
-      *initialTime = currentTime; 
-      return true;
-    }
-    return false;
-  }
+  
 
 //--------------------------------------------------------------
 //      Score Keeping Methods 
@@ -238,7 +226,7 @@ void loop() {
 
     while(selection == 0){
       currentTime = millis();
-      if(!music.isBusy() && coolDownComplete(&musicTimer, musicDelay)){
+      if(!music.isBusy() && coolDownComplete(currentTime, &musicTimer, musicDelay)){
         switch(music_track){
           case 0:
             musicDelay = playAudio(MUS_IDLE_1) + 200000;
@@ -257,7 +245,7 @@ void loop() {
         music_track++;
         music_track %= 4;
       }
-      if(!soundFX.isBusy() && coolDownComplete(&soundFXTimer, sfxDelay)){
+      if(!soundFX.isBusy() && coolDownComplete(currentTime, &soundFXTimer, sfxDelay)){
         sfxDelay = playAudio(SFX_IDLE) + 412000;
       }
 
@@ -304,19 +292,13 @@ void loop() {
   void updateLauncher(){
     ballLoader.write(60);
   }
-
-  void manageDropDown(){
-
-  }
-
-
 //---------------------------------------------------------------
 //     Sensor readouts & interupt handlers
 //---------------------------------------------------------------
 
-  //Time Sensitive function that checks polled sensors
+  //Time Sensitive function that checks polled sensors and hardware
   void pollSensors(){
-
+    ddTarget.poll(currentTime); //Does Check up on Drop Down Target
   }
 
   //Handles the encoded interupt signal

@@ -51,7 +51,7 @@
 #define PIN_POPBUMPER
 
 //Needs PWM
-#define PIN_SERVO_DDTARGET 3
+#define PIN_SERVO_DDTARGET 5
 #define PIN_SERVO_LOAD 4
 
 

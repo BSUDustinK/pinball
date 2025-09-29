@@ -24,11 +24,16 @@ class DropDown
       Servo dropTarget;
       uint8_t targetHeight;
       uint8_t switchPin;
-      bool flag;
-      void popUp();
+      uint8_t flag;
+      unsigned long timer, currentTime;
       void raise();
       void drop();
+      void animate();
     public:
+      /**
+      Constructor for DropDown target, needs to be setUp and calibrated 
+      */
+      DropDown();
       /**
       Constructor for DropDown target, calling this constructor will calibrate
       the device
@@ -36,35 +41,27 @@ class DropDown
       @param switchPin The polled pin for determining if the target is down
       @return DropDown target
       */
-      DropDown(uint8_t servoPin, uint8_t switchPin);
-      
-      /**
-        Sets the gate to open, allowing the gate to remain closed. This is used for trapping the ball
-        ie: qualify ball lock
-      */
-      void enable();
-      /**
-        This turns the target into a simple target, not allowing the ball to get past
-        ie: ball lock not available
-      */
-      void disable();
-      /**
-        lock is used to prevent the gate from opening, this is used when a ball is trapped
-        ie: Force Gate Shut
-      */
-      void lock();
-      /**
-        Removes the lock
-      */
-      void unlock();
+      setUp(uint8_t servoPin, uint8_t switchPin);
+
       /**
         Used in setup to establish nessicary bounds of the servo for desired output
       */
       void calibrate();
+
+
+      /**
+        Used to change the behaviour of the device:
+          0: Imediately pops back up 
+          1: Stays down
+          2: Stays up
+          3: Moves the target back and forth, cannot detect hits.
+        Three must be called after the drop down target is hit and the state prior is 1, Must Also have been calibrated
+      */
+      void setMode(uint8_t mode);
       /**
         Used within the game loop to check if a ball has been captured. 
         DOES NOT NEED AN INTERUPT!
         @return 0 if not hit or locked, 1 if hit and open, 2 if hit and closed
       */
-      uint8_t poll();
+      uint8_t poll(unsigned long time);
   }; 
