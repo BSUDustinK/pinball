@@ -15,47 +15,41 @@
   To build your own games, use the 
 */
 
-DropDown ddTarget;
 
-/**
-  coolDown
-  Used to track cooldowns
-  @param initialTime A pointer to the timer for the desired module
-  @param duration The length in Milliseconds that the operation will wait before operating again
-  @return True if a timer was created or a previous timer has finished
-*/
-bool coolDown(long* initialTime, long duration);
+//Flags flagRegister 0x-0000-0000 - 0000-0000
+//                      ^Sensors^   ^Hardware^
 
-//Flags flagRegister 0b-0000-0000-0000-0000
-// 0
-#define FLAG_SOL_LAUNCH_ACTIVE (flagRegister%2==1)
-// 1
-#define FLAG_SOL_FLIPPER_ACTIVE (flagRegister%2==1)
-// 2
-#define FLAG_SOL_CATAPULT (flagRegister%2==1)
-// 3
-#define FLAG_SOL_POPBUMPER_ACTIVE (flagRegister%2==1)
-// 4
+//Device actions
+  // 0 
+    #define FLAG_SOL_LAUNCH_ACTIVE (flagRegister%2==1)
+  // 1
+    #define FLAG_SOL_FLIPPER_ACTIVE ((flagRegister<<1)%2==1)
+  // 2
+    #define FLAG_SOL_CATAPULT ((flagRegister<<2)%2==1)
+  // 3
+    #define FLAG_SOL_POPBUMPER_ACTIVE ((flagRegister<<3)%2==1)
+  // 4
+    #define FLAG_SERVO_LOAD_ACTIVE ((flagRegister<<4)%2==1)
+  // 5
 
-// 5
+  // 6
 
-// 6
+  // 7
 
-// 7
+//Sensor Readout
+  // 8
+    #define FLAG_MUX_ ((flagRegister<<8)%2==1)
+  // 9
+    #define
+  // 10
 
-// 8
+  // 11
 
-// 9
+  // 12
 
-// 10
+  // 13
 
-// 11
+  // 14
 
-// 12
-
-// 13
-
-// 14
-
-// 15
+  // 15
  

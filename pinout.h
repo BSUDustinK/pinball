@@ -7,6 +7,10 @@
   Customize these to your board, refer to your manufacture's pin guide for PWM and interupt capable pins
 
   Current Configuration is for Arduino Mega2560
+
+  Known issues:
+    Audio pins are interfering with PWM functionallity. I believe this is due to an internal timer interupt conflict between 
+    the PWM function and the Serial Comm used by the DFPlayerMini library. 
 */
 
 //#### Communication ####
@@ -29,19 +33,23 @@
 
 //####  Inputs  ####
 
-//Player control
-#define PIN_SIDEBUTTON        //Needs interupt
-#define PIN_FRONTBUTTON
+//Polled Sensors
+
+
+//Interupt, ordered in priority required
+#define PIN_INT_DRAIN
+#define PIN_SIDEBUTTON
+#define PIN_ENCODER_TRIGGER   // Needs interupt, calls mux interupt handler
 
 //Interupt Expansion Using Encoder
-#define PIN_ENCODER_TRIGGER   //Needs interupt
-#define PIN_ENCODER_ADR_1
-#define PIN_ENCODER_ADR_2
-#define PIN_ENCODER_ADR_4
 
-//Polled Inputs //TODO replace 22
-#define PIN_POLL_DDTARGET 22 
+#define PIN_ENCODER_ADR_1     // Polled in interupt handler
+#define PIN_ENCODER_ADR_2     // ^
+#define PIN_ENCODER_ADR_4     // ^
 
+//Polled Inputs 
+#define PIN_POLL_DDTARGET 22    //TODO replace 22
+#define PIN_FRONTBUTTON   23    // Polled Value
 
 //#### Outputs ####
 
@@ -50,14 +58,14 @@
 //24V Mosfet Chip
 #define PIN_SLING
 #define PIN_FLIPPER
-#define PIN_LAUNCHER 0
+#define PIN_LAUNCHER 
 #define PIN_POPBUMPER
 
 //Needs PWM
-#define PIN_SERVO_ENABLE 47
+#define PIN_SERVO_ENABLE 47     //TODO temporary while debugging audio comm interference with PWM function
 
-#define PIN_SERVO_DDTARGET 3
-#define PIN_SERVO_LOAD 4
+#define PIN_SERVO_DDTARGET 3    //TODO determine better PWM pins
+#define PIN_SERVO_LOAD 4        //TODO determine better PWM pins
 
 
 //LED Multiplexer

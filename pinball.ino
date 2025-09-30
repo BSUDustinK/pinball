@@ -39,26 +39,28 @@
 // Variables
 //----------------------------------------------
 
-  //### Devices
-
+  //### Device Variables
   DFPlayerMini soundFX;
   DFPlayerMini music;
-
   Servo ballLoader;
+  DropDown ddTarget;
 
   //### State Flags
   volatile uint16_t flagRegister; // Multiple flags stored in the bit 0x-0000-0000-0000-0000
   volatile uint8_t gameMode;
 
   //### Timers
-  unsigned long musicTimer, soundFXTimer, currentTime;  //TIMING 
-  unsigned long launchTimer, launchSolenoidTimer, flipperTimer, catapultTimer;
+  unsigned long currentTime;
+  unsigned long musicTimer, soundFXTimer; 
+  unsigned long loadTimer, launchTimer, flipperTimer, catapultTimer;
 
   //### Game Values
   volatile unsigned long currentScore;
   uint8_t credits;
   uint8_t ballsLeft, ballsInPlay, ballsPerGame;
 
+
+  //### Custom Classes and Structs
 
   //This stores the top three high scores and the initials associated with them
   struct highScore{
@@ -68,84 +70,90 @@
       return (String)initials + " Score: " + score;
     }
   };
+  highScore topScores[3];     //<< Consider expanding this 
+  
+//----------------------------------------------
+//  Constant Config Values, replace with define's 
+//----------------------------------------------
+  const bool DEBUG = true;
 
-  //### Custom Classes and Structs
-  highScore topScores[3];
 //----------------------------------------------
 //  Code Begin
 //----------------------------------------------
-const bool DEBUG = true;
+  //Initialize pinball machine
+  void setup() {
+    if(DEBUG){ 
+      Serial.begin(9600); 
+      while(!Serial){}
+      Serial.println("\n### BEGIN RUN ###\n");
+    }
+    //## Change these to customize your machine ##
+    credits = 0;                    //Initial credits on startup
+    ballsPerGame = 3;
+    currentTime = millis();
+    pinMode(PIN_SERVO_ENABLE, OUTPUT);
+    digitalWrite(PIN_SERVO_ENABLE,LOW);
 
-//Initialize pinball machine
-void setup() {
-  if(DEBUG){ 
-    Serial.begin(9600); 
-    while(!Serial){}
-    Serial.println("\n### BEGIN RUN ###\n");
+    //### Loads High Scores   <<<<< KEEP COMMENTED UNTIL DEPLOYMENT. EEPROM HAS 100,000 read/write ops.
+    //topScores[0] = EEPROM.get(0,topScores[0]);
+    //topScores[1] = EEPROM.get(10,topScores[1]);
+    //topScores[2] = EEPROM.get(20,topScores[2]);
+    //delay(200);  
+
+    //Serial.println("\nFinished Loading Highscores: \n");
+    //Serial.println(topScores[0].toString());
+    //Serial.println(topScores[1].toString());
+    //Serial.println(topScores[2].toString());
+
+    //## Hardware Setup ##
+    //Set up Servos
+
+    //COMPLETE CODE
+    ballLoader.attach(PIN_SERVO_LOAD);
+    ballLoader.write(60); //Set to down state, this will need to be customized for your configuration 
+
+    ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
+    ddTarget.calibrate(); //Sets up drop target
+    ddTarget.setMode(2); //TODO for showing off set to 0 for actual gameplay
+
+    Serial.println("\nFinished Servo SetUP\n");
+
+    /*IMPORTANT,
+      ddTarget must detach before sending Serial data to sound boards. 
+      I think it has something to do with the internal timer interupts but couldn't find anything 
+    */
+    //## Set up Audio ##
+    disableServos();
+    delay(1000);
+    music.init(PIN_MUSIC_BUSY, PIN_MUSIC_RX, PIN_MUSIC_TX);
+    soundFX.init(PIN_SE_BUSY, PIN_SE_RX, PIN_SE_TX);
+    delay(200);
+    music.setVolume(26);
+    soundFX.setVolume(30);
+    music.setVolume(2); //TODO Delete when not testing no more
+    soundFX.setVolume(2); //TODO Delete when not testing no more
+    Serial.println("\nmusic\n");\
+    delay(1000);
+    enableServos();
+
+    Serial.println("\nFinished Audio SetUP\n");
+
   }
-  //## Change these to customize your machine ##
-  credits = 0;                    //Initial credits on startup
-  ballsPerGame = 3;
-  currentTime = millis();
-  pinMode(PIN_SERVO_ENABLE, OUTPUT);
-  digitalWrite(PIN_SERVO_ENABLE,LOW);
 
-  //### Loads High Scores   <<<<< KEEP COMMENTED UNTIL DEPLOYMENT. EEPROM HAS 100,000 read/write ops.
-  //topScores[0] = EEPROM.get(0,topScores[0]);
-  //topScores[1] = EEPROM.get(10,topScores[1]);
-  //topScores[2] = EEPROM.get(20,topScores[2]);
-  //delay(500);
-  //Serial.println(topScores[0].toString());
-  //Serial.println(topScores[1].toString());
-  //Serial.println(topScores[2].toString());
-  
-
-  //## Hardware Setup ##
-  //Set up Servos
-  
-  //COMPLETE CODE
-  ballLoader.attach(4);
-  ballLoader.write(60);
-
-  ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
-  ddTarget.calibrate(); //Sets up drop target
-  ddTarget.setMode(2); //TODO for showing off set to 0 for actual gameplay
-
-  Serial.println("\nFinished Servo\n");
-
-  /*IMPORTANT,
-    ddTarget must detach before sending Serial data to sound boards. 
-    I think it has something to do with the internal timer interupts but couldn't find anything 
-  */
-  //## Set up Audio ##
-  disableServos();
-  delay(1000);
-  music.init(PIN_MUSIC_BUSY, PIN_MUSIC_RX, PIN_MUSIC_TX);
-  soundFX.init(PIN_SE_BUSY, PIN_SE_RX, PIN_SE_TX);
-  delay(200);
-  music.setVolume(26);
-  soundFX.setVolume(30);
-  music.setVolume(2); //TODO Delete when not testing no more
-  soundFX.setVolume(2); //TODO Delete when not testing no more
-  Serial.println("\nmusic\n");\
-  delay(1000);
-  enableServos();
-}
-
-//Main Loop
-void loop() {
-  currentTime = millis();
-  gameMode = attractMode();  //Loops until game starts
-  switch(gameMode){
-    case 1:
-    break;
-    case 2:
-    break;
-    default:;
-  } 
-  //TODO displayLastGameScore();
-  //TODO readyNewGame();
-}
+  //Main Loop
+  void loop() {
+    currentTime = millis();
+    gameMode = attractMode();  //Loops until game starts
+    switch(gameMode){
+      case 1:
+      break;
+      case 2:
+      break;
+      default:;
+    } 
+    //TODO displayLastGameScore();
+    //TODO readyNewGame();
+  }
 
 //--------------------------------------------------------------
 //      Score Keeping Methods 
@@ -314,12 +322,12 @@ void loop() {
   void checkHardware(){
     //Checks Servo for Ball Launcher
     if(ballLoader.read() > 60){
-      if(coolDownComplete(currentTime, &launchTimer, 300)){
+      if(coolDownComplete(currentTime, &loadTimer, 300)){
         ballLoader.write(60);
       }
     }
     if(FLAG_SOL_LAUNCH_ACTIVE){
-      if(coolDownComplete(currentTime, &launchSolenoidTimer, 300)){
+      if(coolDownComplete(currentTime, &launchTimer, 300)){
         digitalWrite(PIN_LAUNCHER, LOW);
         flagRegister &= ~(0x01);
       }
@@ -350,10 +358,9 @@ void loop() {
   //Handles the encoded interupt signal
   void muxInterupt(){
     uint8_t muxReadout = 
-    //digitalRead(PIN_ENCODER_ADR_1) + 
-    //digitalRead(PIN_ENCODER_ADR_2) *2+ 
-    //digitalRead(PIN_ENCODER_ADR_4) *4;
-    0;
+    digitalRead(PIN_ENCODER_ADR_1) + 
+    digitalRead(PIN_ENCODER_ADR_2) *2+ 
+    digitalRead(PIN_ENCODER_ADR_4) *4;
     switch(muxReadout){
       case 0:
       break;
