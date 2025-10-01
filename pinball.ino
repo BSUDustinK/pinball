@@ -92,7 +92,7 @@
     ballsPerGame = 3;
     currentTime = millis();
     pinMode(PIN_SERVO_ENABLE, OUTPUT);
-    digitalWrite(PIN_SERVO_ENABLE,LOW);
+    digitalWrite(PIN_SERVO_ENABLE,HIGH);
 
     //### Loads High Scores   <<<<< KEEP COMMENTED UNTIL DEPLOYMENT. EEPROM HAS 100,000 read/write ops.
     //topScores[0] = EEPROM.get(0,topScores[0]);
@@ -100,10 +100,10 @@
     //topScores[2] = EEPROM.get(20,topScores[2]);
     //delay(200);  
 
-    //Serial.println("\nFinished Loading Highscores: \n");
-    //Serial.println(topScores[0].toString());
-    //Serial.println(topScores[1].toString());
-    //Serial.println(topScores[2].toString());
+    //if(DEBUG){ Serial.println("\nFinished Loading Highscores: \n");
+    //if(DEBUG){ Serial.println(topScores[0].toString());
+    //if(DEBUG){ Serial.println(topScores[1].toString());
+    //if(DEBUG){ Serial.println(topScores[2].toString());
 
     //## Hardware Setup ##
     //Set up Servos
@@ -114,9 +114,14 @@
 
     ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
     ddTarget.calibrate(); //Sets up drop target
-    ddTarget.setMode(2); //TODO for showing off set to 0 for actual gameplay
+    ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
 
-    Serial.println("\nFinished Servo SetUP\n");
+    if(DEBUG){ Serial.println("\nFinished Servo SetUP\n"); }
+
+
+    
+
+
 
     /*IMPORTANT,
       ddTarget must detach before sending Serial data to sound boards. 
@@ -124,7 +129,6 @@
     */
     //## Set up Audio ##
     disableServos();
-    delay(1000);
     music.init(PIN_MUSIC_BUSY, PIN_MUSIC_RX, PIN_MUSIC_TX);
     soundFX.init(PIN_SE_BUSY, PIN_SE_RX, PIN_SE_TX);
     delay(200);
@@ -132,16 +136,27 @@
     soundFX.setVolume(30);
     music.setVolume(2); //TODO Delete when not testing no more
     soundFX.setVolume(2); //TODO Delete when not testing no more
-    Serial.println("\nmusic\n");\
-    delay(1000);
+    if(DEBUG){ Serial.println("\nmusic\n"); }
+
     enableServos();
 
-    Serial.println("\nFinished Audio SetUP\n");
+    if(DEBUG){ Serial.println("\nFinished Audio SetUP\n"); }
 
   }
 
   //Main Loop
   void loop() {
+
+
+    //while(true){
+    //  disableServos();
+    //  delay(1000);
+    //  enableServos();
+    //  delay(1000);
+    //}
+
+
+
     currentTime = millis();
     gameMode = attractMode();  //Loops until game starts
     switch(gameMode){
@@ -272,7 +287,7 @@
 
       //Plays SoundXF
       if(!soundFX.isBusy() && coolDownComplete(currentTime, &soundFXTimer, sfxDelay)){
-        sfxDelay = playAudio(SFX_IDLE) + 412000;
+        sfxDelay = playAudio(SFX_IDLE) ;// + 412000;
       }
     }
 
@@ -340,10 +355,14 @@
 
   //This doesn't seem to help with the weird flickering with the Audio Serial commands. 
   void disableServos(){
-    digitalWrite(PIN_SERVO_ENABLE,HIGH);
+    //digitalWrite(PIN_SERVO_ENABLE,HIGH);
+    ddTarget.detach();
+    delay(150);
   }
   void enableServos(){
-    digitalWrite(PIN_SERVO_ENABLE,LOW);
+    delay(150);
+    ddTarget.attach();
+    //digitalWrite(PIN_SERVO_ENABLE,LOW);
   }
 //---------------------------------------------------------------
 //     Sensor readouts & interupt handlers

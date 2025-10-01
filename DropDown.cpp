@@ -134,9 +134,9 @@ void DropDown::setMode(uint8_t mode){
 }
 
 void DropDown::animate(){
-  if(coolDownComplete(currentTime, &timer, 1300)){
+  if(coolDownComplete(currentTime, &timer, 1320)){
     
-    uint8_t height = (FLAG_DD_DIRECTION == 1)? MIN_HEIGHT: (targetHeight - 20);
+    uint8_t height = (FLAG_DD_DIRECTION == 1)? MIN_HEIGHT: (targetHeight - 25);
     dropTarget.write(height);
     flag ^= 0x01<<1;
   }

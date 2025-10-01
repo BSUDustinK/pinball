@@ -16,7 +16,7 @@ I also plan to add a bumper like target to the playfield. This will be a solenoi
 ## Description (Circuits)
 There are many circuits being used to create several effects across the pinball machine. One of my goals was to make the circuits modular, and where possible, make them self managing. This is especially noticable with the LED effects. 
 
-#### Roll Over Sensors: 
+#### Roll Over Sensors
 
 These are linear Hall effect sensors with a magnet affixed at a distance from the hall effect sensor, giving the sensor a magnetic field to pick up. As the ferous pinball gets near, the magnetic field shifts in response. The sensor signal voltage is sent to a comparator with a tuned potentiometer for adjusting the specific sensitivity of each sensor. These sensors than have another circuit that is optional. It allows the circuit to be connected to an LED flash circuit causing a light to flash as the ball rolls over the sensor without needing input from the CPU. 
 
@@ -29,7 +29,7 @@ This is a simple LED flash circuit that causes an initial burst of light, but di
 This is used to display the charge during the Nightsoul game mode. It is a LED bar guage display connected to a decoder. Sending a signal to the decoder will let me cycle through 16 modes, 0...10 are off to fully on, while 11 and on are various patterns flashing or paterns that I have built circuits for. 
 
 #### Expaded Interupt Signal using Priority Encoder
-Interupt signals 
+This is a SN74LS148N Encoder Chip which is wired to take the sensors on the playfield that require an interupt but are not critical. It sends data back to the controller over a three bit bus. THIS NEEDS TO BE HANDLED AT THE TIME OF CAPTURE. Extending the impulses from the sensors is not an option due to the chip overwriting lower priotity inputs. I have considered latching data as it comes in than having a counter clear the latches as the controller reads each interupt. I may continue to work on that design. 
 
 
 ## Description (Program)

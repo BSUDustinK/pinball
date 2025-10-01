@@ -39,13 +39,13 @@
 //Interupt, ordered in priority required
 #define PIN_INT_DRAIN
 #define PIN_SIDEBUTTON
-#define PIN_ENCODER_TRIGGER   // Needs interupt, calls mux interupt handler
+#define PIN_ENCODER_TRIGGER 11   // Needs interupt, calls mux interupt handler CHANGE LATER
 
 //Interupt Expansion Using Encoder
 
-#define PIN_ENCODER_ADR_1     // Polled in interupt handler
-#define PIN_ENCODER_ADR_2     // ^
-#define PIN_ENCODER_ADR_4     // ^
+#define PIN_ENCODER_ADR_1 30  // Polled in interupt handler
+#define PIN_ENCODER_ADR_2 31  // ^
+#define PIN_ENCODER_ADR_4 32  // ^
 
 //Polled Inputs 
 #define PIN_POLL_DDTARGET 22    //TODO replace 22
@@ -56,13 +56,13 @@
 
 
 //24V Mosfet Chip
-#define PIN_SLING
-#define PIN_FLIPPER
-#define PIN_LAUNCHER 
-#define PIN_POPBUMPER
+#define PIN_SLING     41
+#define PIN_FLIPPER     //NEEDS PWM
+#define PIN_LAUNCHER  40 
+#define PIN_POPBUMPER 42
 
 //Needs PWM
-#define PIN_SERVO_ENABLE 47     //TODO temporary while debugging audio comm interference with PWM function
+#define PIN_SERVO_ENABLE 46     //TODO temporary while debugging audio comm interference with PWM function
 
 #define PIN_SERVO_DDTARGET 3    //TODO determine better PWM pins
 #define PIN_SERVO_LOAD 4        //TODO determine better PWM pins

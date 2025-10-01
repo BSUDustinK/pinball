@@ -38,18 +38,20 @@
 
 //Sensor Readout
   // 8
-    #define FLAG_MUX_ ((flagRegister<<8)%2==1)
+    #define FLAG_MUX_DDTARGET ((flagRegister<<8)%2==1)
   // 9
-    #define
+    #define FLAG_MUX_CATAPULT ((flagRegister<<9)%2==1)
   // 10
-
+    #define FLAG_MUX_ ((flagRegister<<10)%2==1)
   // 11
-
+    #define FLAG_MUX_ ((flagRegister<<11)%2==1)
   // 12
-
+    #define FLAG_MUX_LANEFRONT_L ((flagRegister<<12)%2==1)
   // 13
-
+    #define FLAG_MUX_LANEFRONT_R ((flagRegister<<13)%2==1)
   // 14
-
+    #define FLAG_MUX_REARLANE_L ((flagRegister<<14)%2==1)
   // 15
- 
+    #define FLAG_MUX_REARLANE_R ((flagRegister<<15)%2==1)
+
+
