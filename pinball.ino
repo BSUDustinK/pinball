@@ -82,11 +82,12 @@
 //----------------------------------------------
   //Initialize pinball machine
   void setup() {
+    Serial.begin(115200); 
+    while(!Serial){}
     if(DEBUG){ 
-      Serial.begin(9600); 
-      while(!Serial){}
       Serial.println("\n### BEGIN RUN ###\n");
     }
+
     //## Change these to customize your machine ##
     credits = 0;                    //Initial credits on startup
     ballsPerGame = 3;
@@ -111,6 +112,8 @@
     //COMPLETE CODE
     ballLoader.attach(PIN_SERVO_LOAD);
     ballLoader.write(60); //Set to down state, this will need to be customized for your configuration 
+    //launch Solenoid
+    pinMode(PIN_LAUNCHER,OUTPUT);
 
     ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
     ddTarget.calibrate(); //Sets up drop target
@@ -146,15 +149,6 @@
 
   //Main Loop
   void loop() {
-
-
-    //while(true){
-    //  disableServos();
-    //  delay(1000);
-    //  enableServos();
-    //  delay(1000);
-    //}
-
 
 
     currentTime = millis();
@@ -300,6 +294,16 @@
 //--------------------------------------------------------------
 //      Audio    (NO CURRENT PROJECTS)
 //--------------------------------------------------------------
+/**
+    Plays Audio and returns the duration of the audio
+    @param type AUDIO_SFX or AUDIO_MUSIC (0 or 1)
+    @param audioFile The defined macro of the audiofile
+    @param duration !IGNORE! included in the definition macro of the audio file
+    @return duration the song will play for in ms
+  */
+long playAudio(uint8_t type, uint8_t audioFile, long duration){
+  return duration; 
+}
   /**
     Plays Audio and returns the duration of the audio
     @param type AUDIO_SFX or AUDIO_MUSIC (0 or 1)
@@ -307,6 +311,7 @@
     @param duration !IGNORE! included in the definition macro of the audio file
     @return duration the song will play for in ms
   */
+/*
   long playAudio(uint8_t type, uint8_t audioFile, long duration){
     disableServos();
     switch(type){
@@ -320,19 +325,13 @@
     enableServos();
     return duration; 
   }
+  */
 //--------------------------------------------------------------
 //      Devices      
 //  TODO: Add flipper, catapult, & ball launcher
 //--------------------------------------------------------------
   //-TODO Complete this
-  //Ball Launch Mech
-  //Loads a ball to be launched
-  void loadBall(){
-    ballLoader.write(168);
-    while(false){
-      checkHardware(); 
-    }
-  }
+
   //Updates ball launch timer
   void checkHardware(){
     //Checks Servo for Ball Launcher
@@ -349,20 +348,24 @@
     }
   }
 
+  //Ball Launch Mech
+  //Loads a ball to be launched
+  void loadBall(){
+    ballLoader.write(168);
+  }
   void launchBall(){
-
+    //ballLauncher();
   }
 
   //This doesn't seem to help with the weird flickering with the Audio Serial commands. 
   void disableServos(){
-    //digitalWrite(PIN_SERVO_ENABLE,HIGH);
+    while(Serial.available()){}
+    delay(30);
     ddTarget.detach();
-    delay(150);
   }
   void enableServos(){
-    delay(150);
+    while(Serial.available()){}
     ddTarget.attach();
-    //digitalWrite(PIN_SERVO_ENABLE,LOW);
   }
 //---------------------------------------------------------------
 //     Sensor readouts & interupt handlers

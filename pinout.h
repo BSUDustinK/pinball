@@ -8,6 +8,9 @@
 
   Current Configuration is for Arduino Mega2560
 
+  //Comm Pins
+    0(RX), 1(TX)	19(RX1), 18(TX1)	17(RX2), 16(TX2)	15(RX3), 14(TX3)
+
   Known issues:
     Audio pins are interfering with PWM functionallity. I believe this is due to an internal timer interupt conflict between 
     the PWM function and the Serial Comm used by the DFPlayerMini library. 
