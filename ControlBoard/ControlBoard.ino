@@ -81,15 +81,12 @@
     Serial.begin(115200); //NEEDS TO MATCH FXCONTROLLER
     while(!Serial){}
     if(DEBUG){ 
-      Serial.println("\n\n###\t\tBEGIN Controller\t\t###");
+      //Serial.println("\n\n###\t\tBEGIN Controller\t\t###");
     }
-  /* TODO Remove comment
     //## Change these to customize your machine ##
     credits = 0;                    //Initial credits on startup
     ballsPerGame = 3;
     currentTime = millis();
-    pinMode(PIN_SERVO_ENABLE, OUTPUT);
-    digitalWrite(PIN_SERVO_ENABLE,HIGH);
 
     //### Loads High Scores   <<<<< KEEP COMMENTED UNTIL DEPLOYMENT. EEPROM HAS 100,000 read/write ops.
     //topScores[0] = EEPROM.get(0,topScores[0]);
@@ -114,8 +111,8 @@
     ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
     ddTarget.calibrate(); //Sets up drop target
     ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
-  */
-    if(DEBUG){ Serial.println("\nFinished Servo SetUP\n"); }
+  
+    //if(DEBUG){ Serial.println("\nFinished Servo SetUP\n"); }
 
   }
 
@@ -228,7 +225,7 @@
 
     while(selection == 0){
       currentTime = millis();
-      //pollSensors();
+      pollSensors();
   
       //Plays music
       if(coolDownComplete(currentTime, &musicTimer, musicDelay)){
@@ -253,7 +250,7 @@
 
       //Plays SoundXF
       if(coolDownComplete(currentTime, &soundFXTimer, sfxDelay)){
-        sfxDelay = playAudio(SFX_IDLE) ;// + 412000;
+        sfxDelay = playAudio(SFX_IDLE) + 412000;
       }
     }
 
@@ -272,6 +269,7 @@
       @return duration the song will play for in ms
     */
   long playAudio(uint8_t type, uint8_t audioFile, long duration){
+    Serial.flush();
     Serial.println("audio,"+ (String)type +","+ (String)audioFile +";");
     return duration; 
   }
@@ -307,16 +305,6 @@
     //ballLauncher();
   }
 
-  //This doesn't seem to help with the weird flickering with the Audio Serial commands. 
-  void disableServos(){
-    while(Serial.available()){}
-    delay(30);
-    ddTarget.detach();
-  }
-  void enableServos(){
-    while(Serial.available()){}
-    ddTarget.attach();
-  }
 //---------------------------------------------------------------
 //     Sensor readouts & interupt handlers
 //---------------------------------------------------------------
@@ -324,7 +312,7 @@
   //Time Sensitive function that checks polled sensors and hardware
   void pollSensors(){
     ddTarget.poll(currentTime); //Does Check up on Drop Down Target
-    checkHardware();
+    //checkHardware();
   }
 
   //Handles the encoded interupt signal

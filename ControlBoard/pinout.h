@@ -9,7 +9,23 @@
   Current Configuration is for Arduino Mega2560
 
   //Comm Pins
-    0(RX), 1(TX)	19(RX1), 18(TX1)	17(RX2), 16(TX2)	15(RX3), 14(TX3)
+    0(RX), 1(TX),	--> Audio/ DMD controller
+
+    17(RX2), 16(TX2)	15(RX3), 14(TX3)
+
+    19(RX1), 18(TX1) ALSO INTERUPTS, DO NOT USE FOR SERIAL
+
+  // PWM
+    4-13
+    44-46
+
+    2,3 ALSO INTERUPT DO NOT USE FOR PWM
+  
+  // Interupt Pins 
+    2,3,  18,19,20,21
+  
+  //Analog 
+  54(A0) - 69(A15)
 
   Known issues:
     Audio pins are interfering with PWM functionallity. I believe this is due to an internal timer interupt conflict between 
@@ -17,32 +33,23 @@
 */
 
 //#### Communication ####
-
-//Music and Sound Effect
-#define PIN_SE_TX 53
-#define PIN_SE_RX 51
-#define PIN_SE_BUSY 49
-
-#define PIN_MUSIC_TX 52
-#define PIN_MUSIC_RX 50
-#define PIN_MUSIC_BUSY 48
-
-
-//DMD Figure this out
-#define PIN_DMD_TX 16
-#define PIN_DMD_RX 17
-#define PIN_DMD_CS_TOP 
-#define PIN_DMD_CS_BOTTOM
+//Here for refrence, the Serial class defaults to these
+#define PIN_FX_RX 0
+#define PIN_FX_TX 1
 
 //####  Inputs  ####
 
 //Polled Sensors
 
+#define PIN_HALL_LAUNCHER 69  //analog
 
-//Interupt, ordered in priority required
-#define PIN_INT_DRAIN
-#define PIN_SIDEBUTTON
-#define PIN_ENCODER_TRIGGER 11   // Needs interupt, calls mux interupt handler CHANGE LATER
+//Interupt, 2, 3, 18, 19, 20, 21
+#define PIN_CATAPULT_TRIGGER 21   
+#define PIN_ROLLOVER_LEFT_LANE 18
+#define PIN_SIDEBUTTON 20
+#define PIN_ROLLOVER_DRAIN 19
+
+#define PIN_MUX_TRIGGER 2
 
 //Interupt Expansion Using Encoder
 
@@ -50,23 +57,21 @@
 #define PIN_ENCODER_ADR_2 31  // ^
 #define PIN_ENCODER_ADR_4 32  // ^
 
+
 //Polled Inputs 
-#define PIN_POLL_DDTARGET 22    //TODO replace 22
-#define PIN_FRONTBUTTON   23    // Polled Value
+#define PIN_POLL_DDTARGET 22  //On Pin(PULL-UP) -> switch -> GND  //TODO replace 22
+#define PIN_FRONTBUTTON   53    // Polled Value
 
 //#### Outputs ####
 
 
-
-//24V Mosfet Chip
-#define PIN_SLING     41
-#define PIN_FLIPPER     //NEEDS PWM
-#define PIN_LAUNCHER  40 
+//24V Mosfet Chip  PWM 44-46
+#define PIN_LAUNCHER  41 
 #define PIN_POPBUMPER 42
+#define PIN_SLING     43
+#define PIN_FLIPPER   44  //NEEDS PWM
 
 //Needs PWM
-#define PIN_SERVO_ENABLE 46     //TODO temporary while debugging audio comm interference with PWM function
-
 #define PIN_SERVO_DDTARGET 3    //TODO determine better PWM pins
 #define PIN_SERVO_LOAD 4        //TODO determine better PWM pins
 

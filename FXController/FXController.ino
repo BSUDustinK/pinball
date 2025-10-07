@@ -27,30 +27,35 @@
     Current setup is for Arduino Nano, customize to your needs
   */
   //Pin Out
-  #define PIN_MUSIC_RX 11
-  #define PIN_MUSIC_TX 12
-  #define PIN_MUSIC_BUSY 10
-  #define PIN_SE_RX 8
-  #define PIN_SE_TX 9
-  #define PIN_SE_BUSY 7
+  #define PIN_MUSIC_RX 10
+  #define PIN_MUSIC_TX 11
+  #define PIN_MUSIC_BUSY 12
+
+  #define PIN_SE_RX 7
+  #define PIN_SE_TX 8
+  #define PIN_SE_BUSY 9
+
+  //PINOUT Audio Module {+, -, PIN_MUSIC_RX, PIN_MUSIC_TX, PIN_MUSIC_BUSY, ____, PIN_SE_RX, PIN_SE_TX, PIN_SE_BUSY}
 
   //Settings: (TODO: TESTING, Change before deployment)
-  const uint8_t MAX_VOLUME = 3;
+  const uint8_t MAX_VOLUME = 4;
 
   void setup(){
     Serial.begin(115200); 
     while(!Serial){}
     Serial.println("\n\n###\t\tBEGIN FX\t\t###");
-    music.init(PIN_MUSIC_BUSY, PIN_MUSIC_TX, PIN_MUSIC_RX);
-    soundFX.init(PIN_SE_BUSY, PIN_SE_TX, PIN_SE_RX);
-    music.setVolume(MAX_VOLUME*(3/4));
+    music.init(NULL, PIN_MUSIC_TX, PIN_MUSIC_RX);
+    soundFX.init(NULL, PIN_SE_TX, PIN_SE_RX);
+    Serial.println("\n\n###\t\tfinished set up\t\t###");
+    delay(50);
+    music.setVolume(MAX_VOLUME - 2);
+    delay(50);
     soundFX.setVolume(MAX_VOLUME);
   }
    
   void loop(){
     //Process Command
     if(Serial.available() > 0){
-      Serial.println("Input taken");
       String command = Serial.readStringUntil('\n');  
 
       command.trim();
@@ -97,7 +102,6 @@
         i++;
       }
     } while(command.charAt(i) != ',' && command.charAt(i) != ';' && i < command.length());
-    Serial.println("Parsed the value: \""+token+"\"\n");
     return token;
   }
 
