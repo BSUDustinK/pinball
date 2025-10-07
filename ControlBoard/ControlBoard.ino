@@ -23,10 +23,8 @@
 //----------------------------------------------
   //External include
   #include <EEPROM.h>
-  #include <DFPlayerMini.h>
   #include <Servo.h>
   #include <SoftwareSerial.h>
-  #include <string.h>
 
   //My includes (Make sure these files are in the same directory as this file)
   #include "CoolDown.h"
@@ -40,8 +38,6 @@
 //----------------------------------------------
 
   //### Device Variables
-  DFPlayerMini soundFX;
-  DFPlayerMini music;
   Servo ballLoader;
   DropDown ddTarget;
 
@@ -82,12 +78,12 @@
 //----------------------------------------------
   //Initialize pinball machine
   void setup() {
-    Serial.begin(115200); 
+    Serial.begin(115200); //NEEDS TO MATCH FXCONTROLLER
     while(!Serial){}
     if(DEBUG){ 
-      Serial.println("\n### BEGIN RUN ###\n");
+      Serial.println("\n\n###\t\tBEGIN Controller\t\t###");
     }
-
+  /* TODO Remove comment
     //## Change these to customize your machine ##
     credits = 0;                    //Initial credits on startup
     ballsPerGame = 3;
@@ -118,32 +114,8 @@
     ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
     ddTarget.calibrate(); //Sets up drop target
     ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
-
+  */
     if(DEBUG){ Serial.println("\nFinished Servo SetUP\n"); }
-
-
-    
-
-
-
-    /*IMPORTANT,
-      ddTarget must detach before sending Serial data to sound boards. 
-      I think it has something to do with the internal timer interupts but couldn't find anything 
-    */
-    //## Set up Audio ##
-    disableServos();
-    music.init(PIN_MUSIC_BUSY, PIN_MUSIC_RX, PIN_MUSIC_TX);
-    soundFX.init(PIN_SE_BUSY, PIN_SE_RX, PIN_SE_TX);
-    delay(200);
-    music.setVolume(26);
-    soundFX.setVolume(30);
-    music.setVolume(2); //TODO Delete when not testing no more
-    soundFX.setVolume(2); //TODO Delete when not testing no more
-    if(DEBUG){ Serial.println("\nmusic\n"); }
-
-    enableServos();
-
-    if(DEBUG){ Serial.println("\nFinished Audio SetUP\n"); }
 
   }
 
@@ -256,10 +228,10 @@
 
     while(selection == 0){
       currentTime = millis();
-      pollSensors();
-
+      //pollSensors();
+  
       //Plays music
-      if(!music.isBusy() && coolDownComplete(currentTime, &musicTimer, musicDelay)){
+      if(coolDownComplete(currentTime, &musicTimer, musicDelay)){
         switch(music_track){
           case 0:
             musicDelay = playAudio(MUS_IDLE_1) + 200000;
@@ -280,52 +252,30 @@
       }
 
       //Plays SoundXF
-      if(!soundFX.isBusy() && coolDownComplete(currentTime, &soundFXTimer, sfxDelay)){
+      if(coolDownComplete(currentTime, &soundFXTimer, sfxDelay)){
         sfxDelay = playAudio(SFX_IDLE) ;// + 412000;
       }
     }
-
-
 
     return selection;
   }
 
 
 //--------------------------------------------------------------
-//      Audio    (NO CURRENT PROJECTS)
+//      Audio  
 //--------------------------------------------------------------
-/**
-    Plays Audio and returns the duration of the audio
-    @param type AUDIO_SFX or AUDIO_MUSIC (0 or 1)
-    @param audioFile The defined macro of the audiofile
-    @param duration !IGNORE! included in the definition macro of the audio file
-    @return duration the song will play for in ms
-  */
-long playAudio(uint8_t type, uint8_t audioFile, long duration){
-  return duration; 
-}
   /**
-    Plays Audio and returns the duration of the audio
-    @param type AUDIO_SFX or AUDIO_MUSIC (0 or 1)
-    @param audioFile The defined macro of the audiofile
-    @param duration !IGNORE! included in the definition macro of the audio file
-    @return duration the song will play for in ms
-  */
-/*
+      Plays Audio and returns the duration of the audio
+      @param type AUDIO_SFX or AUDIO_MUSIC (0 or 1)
+      @param audioFile The defined macro of the audiofile
+      @param duration !IGNORE! included in the definition macro of the audio file
+      @return duration the song will play for in ms
+    */
   long playAudio(uint8_t type, uint8_t audioFile, long duration){
-    disableServos();
-    switch(type){
-      case AUDIO_SFX:
-        soundFX.playFile(audioFile);
-        break;
-      case AUDIO_MUSIC:
-        music.playFile(audioFile);
-        break;
-    }
-    enableServos();
+    Serial.println("audio,"+ (String)type +","+ (String)audioFile +";");
     return duration; 
   }
-  */
+
 //--------------------------------------------------------------
 //      Devices      
 //  TODO: Add flipper, catapult, & ball launcher
