@@ -33,6 +33,9 @@
   #include "DropDown.h"
   #include "pinball.h"
 
+  const uint8_t  PIN_HALL_LAUNCHER = A15; 
+
+
 //----------------------------------------------
 // Variables
 //----------------------------------------------
@@ -43,11 +46,12 @@
   //### State Flags
   //volatile uint16_t flagRegister; // Multiple flags stored in the bit 0x-0000-0000-0000-0000
   //Action Flags and Triggered Flags
-    volatile bool launcherActive = 0;
-    volatile bool loaderActive = 0;
-    volatile bool catapultActive = 0;
-    volatile bool popBumberActive = 0;
-    volatile bool flipperActive = 0;
+    volatile bool launcherActive = false;
+    volatile bool loaderActive = false;
+    volatile bool catapultActive = false;
+    volatile bool popBumberActive = false;
+    volatile bool flipperActive = false;
+    volatile bool buttonPressed = false;
 
     // Trigger Flags, to be set by the interupt handler as to not cause hang ups
     // hardwareCheckup will operate the behaviour in game loop
@@ -60,13 +64,14 @@
   //### Timers
   unsigned long currentTime;
   unsigned long musicTimer, soundFXTimer; 
-  unsigned long loadTimer, launchTimer, flipperTimer, catapultTimer;
+  volatile unsigned long loadTimer, launchTimer, flipperTimer, catapultTimer, debugTimer;
 
   //### Game Values
   volatile unsigned long currentScore;
   uint8_t credits;
-  uint8_t ballsLeft, ballsInPlay, ballsPerGame;
+  volatile uint8_t ballsLeft, ballsInPlay, ballsPerGame;
 
+  int sensorValue = 0;
 
   //### Custom Classes and Structs
 
@@ -105,26 +110,42 @@
       resetHighScores();
     }
 
+    //analogReference(EXTERNAL);
+
     //###   Hardware Setup    ###
 
     //Ball Loader Mech
       ballLoader.attach(PIN_SERVO_LOAD);
       ballLoader.write(60); //Set to down state, this will need to be customized for your configuration 
     //24V Mosfet Chip
-      pinMode(PIN_LAUNCHER, OUTPUT);
+      pinMode(PIN_LAUNCHER, OUTPUT); //PWM
       pinMode(PIN_FLIPPER, OUTPUT); //PWM
+      pinMode(PIN_SLING, OUTPUT);
     //DropDown Target
-      ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
-      ddTarget.calibrate(); //Sets up drop target
-      ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
+    //TODO REPLACE SERVO AND START AGAIN
+      //ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
+      //ddTarget.calibrate(); //Sets up drop target
+      //ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
   
     if(DEBUG){ Serial.println("\nFinished Hardware SetUP\n"); }
 
+    //INTERUPT
+    pinMode(PIN_SIDEBUTTON, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(PIN_SIDEBUTTON), engageFlipper, CHANGE);
+
+    pinMode(PIN_SLING_TRIGGER, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(PIN_SLING_TRIGGER), engageSlingshot, FALLING);
+
+    pinMode(PIN_ROLLOVER_DRAIN, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(PIN_ROLLOVER_DRAIN), ballDrained, FALLING);
+
+    pinMode(PIN_FRONTBUTTON, INPUT_PULLUP);
+  
   }
 
   //Main Loop
   void loop() {
-
+    readyNewGame();
 
     currentTime = millis();
     gameMode = attractMode();  //Loops until game starts
@@ -136,7 +157,7 @@
       default:;
     } 
     //TODO displayLastGameScore();
-    //TODO readyNewGame();
+
   }
 
 //--------------------------------------------------------------
@@ -246,10 +267,9 @@
     uint8_t music_track = 0;
     long musicDelay = 0;
     long sfxDelay = 0;
-
     while(selection == 0){
       currentTime = millis();
-      pollSensors();
+      checkHardware();
   
       //Plays music
       if(coolDownComplete(currentTime, &musicTimer, musicDelay)){
@@ -281,6 +301,11 @@
     return selection;
   }
 
+  void readyNewGame(){
+    ballsInPlay = 0;
+    ballsLeft = 3;
+  }
+
 
 //--------------------------------------------------------------
 //      Audio  
@@ -306,37 +331,77 @@
 
   //Updates ball launch timer
   void checkHardware(){
+
+    //POLL Sensors
+
     //Checks Servo for Ball Launcher
-    if(ballLoader.read() > 60){
-      if(coolDownComplete(currentTime, &loadTimer, 300)){
-        ballLoader.write(60);
+    //if(digitalRead(PIN_FRONTBUTTON)){
+    //  buttonPressed = false;
+    //}
+    if(!digitalRead(PIN_FRONTBUTTON) && !loaderActive && !launcherActive){
+      if(analogRead(PIN_HALL_LAUNCHER) > 740){
+        launchBall();
+      } else {
+        loadBall(); 
+      }
+    } 
+
+    //Handles state flags
+    if(digitalRead(PIN_FRONTBUTTON)){
+      if(loaderActive){
+        if(coolDownComplete(currentTime, &loadTimer, 1000)){
+          ballLoader.write(60);
+          loaderActive=false;
+        }
+      }
+      if(launcherActive){
+        if(coolDownComplete(currentTime, &launchTimer, 200)){
+          analogWrite(PIN_LAUNCHER, 0);
+          launcherActive = false;
+        }
       }
     }
-    if(flipperActive){
-      if(coolDownComplete(currentTime, &flipperTimer, 400)){
-        analogWrite(PIN_FLIPPER, 100);
-        flipperActive = 0;
+    
+
+    if(catapultActive){
+      if(coolDownComplete(currentTime,&catapultTimer, 50)){
+        digitalWrite(PIN_SLING, LOW);
+        catapultActive = 0;
       }
     }
-    if(launcherActive){
-      if(coolDownComplete(currentTime, &launchTimer, 300)){
-        digitalWrite(PIN_LAUNCHER, LOW);
-        launcherActive = 0;
-      }
+    //ddTarget.poll(currentTime); //TODO Does Check up on Drop Down Target
+
+
+  //DEBUGGING SPOT
+
+    if(coolDownComplete(currentTime, &debugTimer, 500)){
+      Serial.println("Balls In Play: "+ (String)ballsInPlay+"\nBalls in Trough: "+(String)ballsLeft);
     }
+
   }
 
   //Ball Launch Mech
   //Loads a ball to be launched
   void loadBall(){
-    ballLoader.write(168);
+    if(ballsLeft >0){
+      loaderActive = true;
+      ballsLeft--;
+      ballLoader.write(168);
+    } 
   }
   void launchBall(){
-    //ballLauncher();
+    launcherActive = true;
+    ballsInPlay++;
+    analogWrite(PIN_LAUNCHER,200);
+  }
+
+  void ballDrained(){
+    ballsInPlay--;
+    ballsLeft++;
   }
 
   void engageFlipper(){
-    if(digitalRead(PIN_SIDEBUTTON)){
+    if(!digitalRead(PIN_SIDEBUTTON)){
       analogWrite(PIN_FLIPPER,255);
       flipperActive = 1;
     } else {
@@ -344,16 +409,15 @@
       flipperActive = 0;
     }
   }
+  void engageSlingshot(){
+    digitalWrite(PIN_SLING, HIGH);
+    catapultActive = 1;
+    catapultTimer = currentTime;
+  }
 
 //---------------------------------------------------------------
 //     Sensor readouts & interupt handlers
 //---------------------------------------------------------------
-
-  //Time Sensitive function that checks polled sensors and hardware
-  void pollSensors(){
-    ddTarget.poll(currentTime); //Does Check up on Drop Down Target
-    //checkHardware();
-  }
 
   //Handles the encoded interupt signal
   void muxInterupt(){

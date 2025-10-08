@@ -15,7 +15,6 @@
 
   // PWM
     4-13
-    44-46
 
     2,3 ALSO INTERUPT DO NOT USE FOR PWM
   
@@ -35,12 +34,12 @@ const uint8_t  PIN_FX_TX = 1;
 //####  Inputs  ####
 
 //Polled Sensors
-const uint8_t  PIN_HALL_LAUNCHER = 69;  //analog
+ //analog
 const uint8_t  PIN_FRONTBUTTON   = 53;   
-const uint8_t  PIN_POLL_DDTARGET = 22;
+const uint8_t  PIN_POLL_DDTARGET = 52;
 
 //Interupt, 2, 3, 18, 19, 20, 21
-const uint8_t  PIN_CATAPULT_TRIGGER   = 21;   
+const uint8_t  PIN_SLING_TRIGGER   = 21;   
 const uint8_t  PIN_SIDEBUTTON         = 20;
 const uint8_t  PIN_ROLLOVER_DRAIN     = 19;
 const uint8_t  PIN_ROLLOVER_LEFT_LANE = 18;
@@ -53,11 +52,11 @@ const uint8_t  PIN_ENCODER_ADR_2 = 31;
 const uint8_t  PIN_ENCODER_ADR_4 = 32;  
 
 //#### Outputs ####
-//24V Mosfet Chip  PWM 44-46
-const uint8_t  PIN_LAUNCHER  = 41; 
-const uint8_t  PIN_POPBUMPER = 42;
-const uint8_t  PIN_SLING     = 43;
-const uint8_t  PIN_FLIPPER   = 44;  //NEEDS PWM
+//24V Mosfet Chip  
+const uint8_t  PIN_LAUNCHER  = 13; //NEEDS PWM
+const uint8_t  PIN_POPBUMPER = 43;
+const uint8_t  PIN_SLING     = 42;
+const uint8_t  PIN_FLIPPER   = 44;  
 
 //Needs PWM
 const uint8_t  PIN_SERVO_DDTARGET = 4;    //TODO determine better PWM pins
