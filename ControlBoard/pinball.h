@@ -18,18 +18,27 @@
 
 //Flags flagRegister 0x-0000-0000 - 0000-0000
 //                      ^Sensors^   ^Hardware^
-
+/**
+  Macro Definitions for ease of access to flags. 
+  USE:
+    Write to flag
+      FLAG_WRITE_TRUE_LAUNCH  < Applies the logical operation to register
+    Check flag state
+      FLAG_CHECK_LAUNCH < Places the bit of the flag in the LSB 
+*/
 //Device actions
+  
+  /*
   // 0 
-    #define FLAG_SOL_LAUNCH_ACTIVE (flagRegister%2==1)
+    #define FLAG_SOL_LAUNCH_ACTIVE (flagRegister)%2==1
   // 1
-    #define FLAG_SOL_FLIPPER_ACTIVE ((flagRegister<<1)%2==1)
+    #define FLAG_SOL_FLIPPER_ACTIVE (flagRegister<<1)%2==1
   // 2
-    #define FLAG_SOL_CATAPULT ((flagRegister<<2)%2==1)
+    #define FLAG_SOL_CATAPULT_ACTIVE (flagRegister<<2)%2==1
   // 3
-    #define FLAG_SOL_POPBUMPER_ACTIVE ((flagRegister<<3)%2==1)
+    #define FLAG_SOL_POPBUMPER_ACTIVE (flagRegister<<3)%2==1
   // 4
-    #define FLAG_SERVO_LOAD_ACTIVE ((flagRegister<<4)%2==1)
+    #define FLAG_SERVO_LOAD_ACTIVE (flagRegister<<4)%2==1
   // 5
 
   // 6
@@ -53,5 +62,6 @@
     #define FLAG_MUX_REARLANE_L ((flagRegister<<14)%2==1)
   // 15
     #define FLAG_MUX_REARLANE_R ((flagRegister<<15)%2==1)
+  */
 
 
