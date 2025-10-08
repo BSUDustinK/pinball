@@ -80,9 +80,7 @@
   void setup() {
     Serial.begin(115200); //NEEDS TO MATCH FXCONTROLLER
     while(!Serial){}
-    if(DEBUG){ 
-      //Serial.println("\n\n###\t\tBEGIN Controller\t\t###");
-    }
+    if(DEBUG){ Serial.println("\n\n###\t\tBEGIN Controller\t\t###");}
     //## Change these to customize your machine ##
     credits = 0;                    //Initial credits on startup
     ballsPerGame = 3;

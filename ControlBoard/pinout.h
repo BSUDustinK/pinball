@@ -59,7 +59,7 @@
 
 
 //Polled Inputs 
-#define PIN_POLL_DDTARGET 22  //On Pin(PULL-UP) -> switch -> GND  //TODO replace 22
+#define PIN_POLL_DDTARGET 52  //On Pin(PULL-UP) -> switch -> GND  //TODO replace 22
 #define PIN_FRONTBUTTON   53    // Polled Value
 
 //#### Outputs ####
@@ -72,8 +72,8 @@
 #define PIN_FLIPPER   44  //NEEDS PWM
 
 //Needs PWM
-#define PIN_SERVO_DDTARGET 3    //TODO determine better PWM pins
-#define PIN_SERVO_LOAD 4        //TODO determine better PWM pins
+#define PIN_SERVO_DDTARGET 4   //TODO determine better PWM pins
+#define PIN_SERVO_LOAD 3        //TODO determine better PWM pins
 
 
 //LED Multiplexer
