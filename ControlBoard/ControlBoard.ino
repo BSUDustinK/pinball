@@ -26,23 +26,35 @@
   #include <Servo.h>
   #include <SoftwareSerial.h>
 
-  //My includes (Make sure these files are in the same directory as this file)
+  //My includes
   #include "CoolDown.h"
   #include "audioFiles.h"
   #include "pinout.h"
   #include "DropDown.h"
-
   #include "pinball.h"
+
 //----------------------------------------------
 // Variables
 //----------------------------------------------
-
   //### Device Variables
   Servo ballLoader;
   DropDown ddTarget;
 
   //### State Flags
-  volatile uint16_t flagRegister; // Multiple flags stored in the bit 0x-0000-0000-0000-0000
+  //volatile uint16_t flagRegister; // Multiple flags stored in the bit 0x-0000-0000-0000-0000
+  //Action Flags and Triggered Flags
+    volatile bool launcherActive = 0;
+    volatile bool loaderActive = 0;
+    volatile bool catapultActive = 0;
+    volatile bool popBumberActive = 0;
+    volatile bool flipperActive = 0;
+
+    // Trigger Flags, to be set by the interupt handler as to not cause hang ups
+    // hardwareCheckup will operate the behaviour in game loop
+    volatile bool ddTargetHit = 0;
+    volatile bool catapultHit = 0;
+
+  //Keeps track of the current state of the game
   volatile uint8_t gameMode;
 
   //### Timers
@@ -72,6 +84,7 @@
 //  Constant Config Values, replace with define's 
 //----------------------------------------------
   const bool DEBUG = true;
+  const bool CALL_EEPROM = false; // Keep off until deployment
 
 //----------------------------------------------
 //  Code Begin
@@ -85,32 +98,27 @@
     credits = 0;                    //Initial credits on startup
     ballsPerGame = 3;
     currentTime = millis();
+    // Loads High Scores 
+    if(CALL_EEPROM){
+      loadHighScores();
+    } else {
+      resetHighScores();
+    }
 
-    //### Loads High Scores   <<<<< KEEP COMMENTED UNTIL DEPLOYMENT. EEPROM HAS 100,000 read/write ops.
-    //topScores[0] = EEPROM.get(0,topScores[0]);
-    //topScores[1] = EEPROM.get(10,topScores[1]);
-    //topScores[2] = EEPROM.get(20,topScores[2]);
-    //delay(200);  
+    //###   Hardware Setup    ###
 
-    //if(DEBUG){ Serial.println("\nFinished Loading Highscores: \n");
-    //if(DEBUG){ Serial.println(topScores[0].toString());
-    //if(DEBUG){ Serial.println(topScores[1].toString());
-    //if(DEBUG){ Serial.println(topScores[2].toString());
-
-    //## Hardware Setup ##
-    //Set up Servos
-
-    //COMPLETE CODE
-    ballLoader.attach(PIN_SERVO_LOAD);
-    ballLoader.write(60); //Set to down state, this will need to be customized for your configuration 
-    //launch Solenoid
-    pinMode(PIN_LAUNCHER,OUTPUT);
-
-    ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
-    ddTarget.calibrate(); //Sets up drop target
-    ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
+    //Ball Loader Mech
+      ballLoader.attach(PIN_SERVO_LOAD);
+      ballLoader.write(60); //Set to down state, this will need to be customized for your configuration 
+    //24V Mosfet Chip
+      pinMode(PIN_LAUNCHER, OUTPUT);
+      pinMode(PIN_FLIPPER, OUTPUT); //PWM
+    //DropDown Target
+      ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
+      ddTarget.calibrate(); //Sets up drop target
+      ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
   
-    //if(DEBUG){ Serial.println("\nFinished Servo SetUP\n"); }
+    if(DEBUG){ Serial.println("\nFinished Hardware SetUP\n"); }
 
   }
 
@@ -143,6 +151,20 @@
     topScores[2] = highScore{.initials = {'A','J','W'}, .score = 80000};
     putScoresInEEPROM();
   }
+
+  void loadHighScores(){
+    topScores[0] = EEPROM.get(0,topScores[0]);
+    topScores[1] = EEPROM.get(10,topScores[1]);
+    topScores[2] = EEPROM.get(20,topScores[2]);
+    delay(50);  
+    if(DEBUG){ 
+      Serial.println("\nFinished Loading Highscores: \n");
+      Serial.println(topScores[0].toString());
+      Serial.println(topScores[1].toString());
+      Serial.println(topScores[2].toString()); 
+    }
+  }
+  
 
   /**
     Check 's score and begins user input for recording initials
@@ -188,14 +210,18 @@
     TODO Change when hardware needs change
   */
   void putScoresInEEPROM(){
-    EEPROM.put(0, topScores[0]);
-    EEPROM.put(10, topScores[1]);
-    EEPROM.put(20, topScores[2]);
-    if(DEBUG){ 
-      Serial.println("\nEEPROM UPDATED: SCORES\nUpdated values are: ");
-      Serial.println(topScores[0].toString());
-      Serial.println(topScores[1].toString());
-      Serial.println(topScores[2].toString()); 
+    if(CALL_EEPROM){
+      EEPROM.put(0, topScores[0]);
+      EEPROM.put(10, topScores[1]);
+      EEPROM.put(20, topScores[2]);
+      if(DEBUG){ 
+        Serial.println("\nEEPROM UPDATED: SCORES\nUpdated values are: ");
+        Serial.println(topScores[0].toString());
+        Serial.println(topScores[1].toString());
+        Serial.println(topScores[2].toString()); 
+      }
+    }else{
+      if(DEBUG){ Serial.println("\nEEPROM Deactive, please check Constant Variables and set CALL_EEPROM = true");}
     }
   }
 
@@ -286,10 +312,16 @@
         ballLoader.write(60);
       }
     }
-    if(FLAG_SOL_LAUNCH_ACTIVE){
+    if(flipperActive){
+      if(coolDownComplete(currentTime, &flipperTimer, 400)){
+        analogWrite(PIN_FLIPPER, 100);
+        flipperActive = 0;
+      }
+    }
+    if(launcherActive){
       if(coolDownComplete(currentTime, &launchTimer, 300)){
         digitalWrite(PIN_LAUNCHER, LOW);
-        flagRegister &= ~(0x01);
+        launcherActive = 0;
       }
     }
   }
@@ -301,6 +333,16 @@
   }
   void launchBall(){
     //ballLauncher();
+  }
+
+  void engageFlipper(){
+    if(digitalRead(PIN_SIDEBUTTON)){
+      analogWrite(PIN_FLIPPER,255);
+      flipperActive = 1;
+    } else {
+      analogWrite(PIN_FLIPPER,0);
+      flipperActive = 0;
+    }
   }
 
 //---------------------------------------------------------------
