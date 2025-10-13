@@ -23,7 +23,7 @@
 #define MODE_DD_LOCK      2
 #define MODE_DD_SKILL     3
 
-#define MIN_HEIGHT 7 //Adjust this to reduce wear on the servo, no noise should be heard and balls should roll over easy
+#define MIN_HEIGHT 0 //Adjust this to reduce wear on the servo, no noise should be heard and balls should roll over easy
 
 // 0x00 -> 0000 ****
 

@@ -88,7 +88,7 @@
 //----------------------------------------------
 //  Constant Config Values, replace with define's 
 //----------------------------------------------
-  const bool DEBUG = true;
+  const bool DEBUG = false;
   const bool CALL_EEPROM = false; // Keep off until deployment
 
 //----------------------------------------------
@@ -123,9 +123,9 @@
       pinMode(PIN_SLING, OUTPUT);
     //DropDown Target
     //TODO REPLACE SERVO AND START AGAIN
-      //ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
-      //ddTarget.calibrate(); //Sets up drop target
-      //ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
+      ddTarget.setUp(PIN_SERVO_DDTARGET, PIN_POLL_DDTARGET); 
+      ddTarget.calibrate(); //Sets up drop target
+      ddTarget.setMode(3); //TODO for showing off set to 0 for actual gameplay
   
     if(DEBUG){ Serial.println("\nFinished Hardware SetUP\n"); }
 
@@ -369,15 +369,15 @@
         catapultActive = 0;
       }
     }
-    //ddTarget.poll(currentTime); //TODO Does Check up on Drop Down Target
+    ddTarget.poll(currentTime); //TODO Does Check up on Drop Down Target
 
 
   //DEBUGGING SPOT
-
-    if(coolDownComplete(currentTime, &debugTimer, 500)){
-      Serial.println("Balls In Play: "+ (String)ballsInPlay+"\nBalls in Trough: "+(String)ballsLeft);
+    if(DEBUG){
+      if(coolDownComplete(currentTime, &debugTimer, 500)){
+        Serial.println("Balls In Play: "+ (String)ballsInPlay+"\nBalls in Trough: "+(String)ballsLeft);
+      }
     }
-
   }
 
   //Ball Launch Mech
