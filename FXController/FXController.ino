@@ -13,16 +13,20 @@
 
 */  
   
-  #include <DFPlayerMini.h>
+  
   #include <SoftwareSerial.h>
 
-  #include <FastLED.h>
-  #define NUM_LEDS 49  //This needs to be adjusted to the number of leds on the line
-
-  CRGB leds[NUM_LEDS];
-
+  #include <DFPlayerMini.h> 
   DFPlayerMini soundFX;
   DFPlayerMini music;
+
+  #include <FastLED.h>
+  #include "LEDModule.h"
+  #define NUM_LEDS 49  //This needs to be adjusted to the number of leds on the line
+  CRGB leds[NUM_LEDS]; //bit data shoved down the LED control line
+  //Contains the values for the LED module for use with the various modes
+
+  //ledModule LEDmodules[20]; 
 
   //Definitions for readability
   #define AUDIO_SFX 0
@@ -52,8 +56,6 @@
     unsigned long currentTime;
 
     uint16_t currentShortTime;
-    uint16_t LEDtimers[NUM_LEDS];
-
 
   void setup(){
     Serial.begin(115200); 
@@ -73,36 +75,39 @@
   }
 
   void testLoop(){
-    //while(true){
-      unsigned long R , G, B;
-      R=0;
-      G=0;
-      B=255;
-      leds[0] = 0x00FF08;
-      for(uint8_t i = 1; i<50; i++){
-        //leds[i==1?49:i-1] = 0x000000;
-        //leds[i] = 0x0FFF4F;
-        //leds[i==49?1:i+1] = 0xFF0F0F;
+    LEDModule module(0,49,0x06F0FF,300);
+    module.setMode(LED_FLOW);
 
-        leds[i] = i%2==1?0x0FFF4F:0xFF0F0F;
-      }
-      delay(300);
-      FastLED.show();
-      for(uint8_t i = 1; i<50; i++){
-        //leds[i==1?49:i-1] = 0x000000;
-        //leds[i] = 0x0FFF4F;
-        //leds[i==49?1:i+1] = 0xFF0F0F;
+    while(true){
 
-        leds[i] = i%2==0?0x0FFF4F:0xFF0F0F;
-      }
-      delay(300);
+      //unsigned long R , G, B;
+      //R=0;
+      //G=0;
+      //B=255;
+      //leds[0] = 0x00FF08;
+      //for(uint8_t i = 1; i<50; i++){
+      //  //leds[i==1?49:i-1] = 0x000000;
+      //  //leds[i] = 0x0FFF4F;
+      //  //leds[i==49?1:i+1] = 0xFF0F0F;
+      //  leds[i] = i%2==1?0x0FFF4F:0xFF0F0F;
+      //}
+      //delay(300);
+      //FastLED.show();
+      //for(uint8_t i = 1; i<50; i++){
+      //  //leds[i==1?49:i-1] = 0x000000;
+      //  //leds[i] = 0x0FFF4F;
+      //  //leds[i==49?1:i+1] = 0xFF0F0F;
+      //  leds[i] = i%2==0?0x0FFF4F:0xFF0F0F;
+      //}
+      ////delay(300);
+      module.updateModule(leds);
       FastLED.show();
-    //}
+    }
   }
    
   void loop(){
 
-    //testLoop();
+    testLoop();
 
 
     //Process Command
@@ -133,7 +138,7 @@
 
       } else if(action.equals("audio")){
         
-        playAudio(tokens[0], tokens[1]);
+        playAudio(tokens[0], tokens[1]); 
 
       } else if(action.equals("animate")){
 
