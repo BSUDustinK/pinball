@@ -5,7 +5,7 @@ A base framework for quickly protyping game loops and external modules for a hom
 ## Description (Physical)
 The pinball machine is a 2'x1'x1/2" whitewood board with a sinlge flipper and a catapult near the bottom. The catapult is a false wall across from the flipper with a solenoid to bounce the ball away. The flipper is a bat like paddle that can be engaged and smacks the ball away. 
 
-I have chosen this set up due to the narrow width of the pinball machine, this allows me to keep all the targets and shots withing a wider field and focus on the flow of the ball and the paths it can take back to the flipper. 
+I have chosen this set up due to the narrow width of the pinball machine, this allows me to keep all the targets and shots within a wider field and focus on the flow of the ball and the paths it can take back to the flipper. 
 
 I have also added a drop down target in the form of a ball trap to allow for a multiball game mode. Upon qualifying the ball lock, you will be able to trap a ball behind the target, than knock it back down to release the ball starting a fast paced game mode. 
 
