@@ -52,9 +52,9 @@ I do have plans to take what I learn from this project and expand it to a full s
 - I have spent a good deal of time researching and readiong technical documentation regarding integrated circuits, circuit modules, and how to communicate via serial data. 
 
 ## TODOs
-- [] Complete base hardware tasks 
-- [] Program Interupt Handler for encoder, drain, and flipper button
-- [] Program Ball Launch, flipper, drop target, and catapult controls
+- □ Complete base hardware tasks 
+- □ Program Interupt Handler for encoder, drain, and flipper button
+- □ Program Ball Launch, flipper, drop target, and catapult controls
 
 
 #### Reference list entry:
